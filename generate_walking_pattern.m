@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear;										% 変数の初期化
 											% ★★★足の着地時間(s)，x方向の位置(m)，y方向の位置(m)
-foot = [0 0 0; 0.8 0.0 0.2; 1.6 0.3 0.0; 2.4 0.6 0.2; 3.2 0.9 0.0; 4.0 0.9 0.2; 100 0 0];
+foot = [0 0 0; 0.8 0.0 0.2; 1.6 0.3 0.0; 2.4 0.6 0.2; 3.2 0.9 0.0; 4.0 0.9 0.2; 100 0.9 0.2];
 calculate_period = 4.0;						% 歩行パターンを生成する期間(s)
 dt = 0.01;									% サンプリングタイム (s)
 zh = 0.8;									% 重心位置 (m)
@@ -29,14 +29,19 @@ endfor
 
 i = n = 1;
 px = py = 0;
-x = y = xi = xi = 0;
+x = y = xi = yi = 0;
 xd = yd = xdi = ydi = 0;
-Tc = 1;
 a = 10;
 b = 1;
 Tc = sqrt(zh/g);
+t0 = 0;
 
 for tt = t
+	x = (xi - px)*cosh((tt - t0)/Tc)+Tc*xdi*sinh((tt - t0)/Tc)+px;
+	y = (yi - py)*cosh((tt - t0)/Tc)+Tc*ydi*sinh((tt - t0)/Tc)+py;
+	xd = (xi - px)/Tc*sinh((tt - t0)/Tc)+xdi*cosh((tt - t0)/Tc);
+	yd = (yi - py)/Tc*sinh((tt - t0)/Tc)+ydi*cosh((tt - t0)/Tc);
+
 	if (tt == foot(n,1))
 		t0 = foot(n,1);
 		xi = x;
@@ -56,16 +61,12 @@ for tt = t
 		y_des = py + yb;
 		xd_des = vxb;
 		yd_des = vyb;
-		D = a*(C-1)*(C-1)+b*(S/Tc)*(S/Tc);
+		D = a*(C-1)^2+b*(S/Tc)^2;
 		px = -a*(C-1)/D*(x_des-C*xi-Tc*S*xdi)-b*S/(Tc*D)*(xd_des-S/Tc*xi-C*xdi);
 		py = -a*(C-1)/D*(y_des-C*yi-Tc*S*ydi)-b*S/(Tc*D)*(yd_des-S/Tc*yi-C*ydi);
 		n = n + 1;
 	endif
 
-	x = (xi - px)*cosh((tt - t0)/Tc)+Tc*xdi*sinh((tt - t0)/Tc)+px;
-	y = (yi - py)*cosh((tt - t0)/Tc)+Tc*ydi*sinh((tt - t0)/Tc)+py;
-	xd = (xi - px)/Tc*sinh((tt - t0)/Tc)+xdi*cosh((tt - t0)/Tc);
-	yd = (yi - py)/Tc*sinh((tt - t0)/Tc)+ydi*cosh((tt - t0)/Tc);
 	x0(i) = x;				% 重心位置の描画用
 	y0(i) = y;
 	x1(i) = prefx(i);		% 目標ZMP位置の描画用
